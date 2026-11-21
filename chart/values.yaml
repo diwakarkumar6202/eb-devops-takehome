@@ -1,0 +1,39 @@
+replicaCount: 2
+
+image:
+  repository: demo-service
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent   # image is side-loaded into kind; never pulled from a registry
+
+config:
+  appName: demo
+  version: "0.1.0"
+
+containerPort: 8080
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: demo.local
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 250m
+    memory: 192Mi
+
+probes:
+  liveness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 2
+    periodSeconds: 5
+    failureThreshold: 3

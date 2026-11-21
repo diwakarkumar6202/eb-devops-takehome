@@ -1,0 +1,6 @@
+{{ include "demo.fullname" . }} deployed to namespace {{ .Release.Namespace }}.
+
+Verify:
+  kubectl -n {{ .Release.Namespace }} get pods,svc,ingress
+  curl -H "Host: {{ .Values.ingress.host }}" http://localhost/
+  curl -H "Host: {{ .Values.ingress.host }}" http://localhost/healthz
