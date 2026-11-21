@@ -296,12 +296,19 @@ reporter   <none>
 
 **Root cause (found outside the recording):** I ran the lab image locally
 against a small fake Kubernetes API server (Python, TLS, mounted fake
-ServiceAccount files), varying one thing at a time:
+ServiceAccount files), varying one thing at a time. Re-runnable:
+`lab/notes/reporter-repro/run.sh`.
 
-| PodList body | Result |
+```
+body=1000   bytes -> {"namespace":"test","pod":"0a0c3c2e0a82","pods":1}
+body=1024   bytes -> {"namespace":"test","pod":"79208f5f5ad3","pods":1}
+body=1025   bytes -> {"error":"parse pod list: unexpected end of JSON input","status":"unhealthy"}
+body=6000   bytes -> {"error":"parse pod list: unexpected end of JSON input","status":"unhealthy"}
+body=45000  bytes -> {"error":"parse pod list: unexpected end of JSON input","status":"unhealthy"}
+```
+
+| Other variations | Result |
 |---|---|
-| 1011 bytes | `{"namespace":"test","pods":7}` ✅ |
-| 1039 bytes | `parse pod list: unexpected end of JSON input` ❌ |
 | 843 bytes, sent in two writes 0.5 s apart | ✅ (it reads the stream fully — not a single-`Read()` bug) |
 | with / without `Content-Length` | same 1 KiB cutoff |
 | container memory none / 64m / 128m / 256m / 512m | fails every time |
