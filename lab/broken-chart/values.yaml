@@ -14,6 +14,9 @@ image:
 common:
   # Every workload serves plain HTTP on this port.
   port: 8080
+  # Image declares USER "nonroot" (non-numeric); kubelet needs a numeric UID
+  # to enforce runAsNonRoot. UID taken from the image's /etc/passwd.
+  runAsUser: 65532
 
 backend:
   replicas: 1
