@@ -38,7 +38,10 @@ gateway:
     APP_MODE: "gateway"
     APP_NAME: "gateway"
     VERSION: "2.0.0"
-    BACKEND_URL: "http://backend.default.svc:8080"
+    # Backend lives in the release namespace, not "default". The short name
+    # resolves via the pod's DNS search path to the same namespace, so the
+    # chart works in whatever namespace it is installed into.
+    BACKEND_URL: "http://backend:8080"
   resources:
     requests:
       cpu: "50m"
