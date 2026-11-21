@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-build-scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Lint chart
+        run: |
+          helm lint chart/
+          helm template demo chart/ > /dev/null
+          helm template demo chart/ --set replicaCount=3 | grep -q "replicas: 3"
+
+      - name: Lint shell scripts
+        run: shellcheck setup.sh
+
+      - name: Build image
+        run: docker build -t demo-service:${{ github.sha }} service/
+
+      - name: Trivy scan (fail on HIGH/CRITICAL)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.75.0 image \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            demo-service:${{ github.sha }}
