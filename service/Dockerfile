@@ -1,5 +1,5 @@
 # ---- Stage 1: install dependencies into a virtualenv ----
-FROM python:3.12.8-slim-bookworm AS builder
+FROM python:3.12.16-slim-trixie AS builder
 WORKDIR /build
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
@@ -7,12 +7,16 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # ---- Stage 2: minimal runtime image ----
-FROM python:3.12.8-slim-bookworm
+FROM python:3.12.16-slim-trixie
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH"
 
-RUN groupadd --system --gid 10001 app \
+# Apply Debian security fixes newer than the base image, then create the non-root user
+RUN apt-get update \
+ && apt-get upgrade -y --no-install-recommends \
+ && rm -rf /var/lib/apt/lists/* \
+ && groupadd --system --gid 10001 app \
  && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
 
 WORKDIR /app
